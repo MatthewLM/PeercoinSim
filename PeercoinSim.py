@@ -1,4 +1,5 @@
 import numpy as np
+import random
 import matplotlib.pyplot as plt
 
 dayyear=(365*33+8)/33
@@ -18,21 +19,20 @@ probsecs = [2**224 * (x+1) / (2**256) for x in range(60)]
 def RandomDaysToMint(outValue,difficulty,rng):
 
     adj = outValue / difficulty
-    probs = [1 - (1 - probsecs[x]*adj)**secday for x in range(60)]
-
     DaysToMint=31
+    probday=1
+
     for x in range(60):
 
-        rnd = rng.random()
-        probday = probs[x]
+        rnd = random.random()
+        probday = 1 - (1 - probsecs[x]*adj)**secday
 
-        if rnd<probday: break
+        if rnd<probday:
+            return DaysToMint
 
         DaysToMint+=1
 
-    else: DaysToMint=DaysToMint+rng.geometric(probs[59])
-
-    return DaysToMint
+    return DaysToMint+rng.geometric(probday)
 
 rng = np.random.default_rng()
 
@@ -80,6 +80,6 @@ for w in range(100):
 ax.set_xlabel("UTXO Size")
 ax.set_ylabel("% Reward / Yr")
 plt.xscale("log")
-plt.grid()
+plt.grid(which="both")
 plt.show()
 
