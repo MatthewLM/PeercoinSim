@@ -8,8 +8,9 @@ NumSim=1000
 
 #Simulation Variables
 diff=20.43
+PercentageReward=0.03
 StaticReward=1.34
-MaxSimDays=365*2
+MaxSimDays=365*4
 geometric=True
 
 # Precomputed probability for 31-90 days to be adjusted by value/diff
@@ -48,7 +49,7 @@ def MintRewards(outValue, difficulty):
 
         #Coinage Limit
         if MintDays < MaxSimDays:
-            reward=0.03*outValue*min(365, MintDays)/dayyear + StaticReward
+            reward=PercentageReward*outValue*min(365, MintDays)/dayyear + StaticReward
             if geometric:
                 totalreward *= 1+(reward/outValue)
             else:
@@ -64,19 +65,24 @@ def MintRewards(outValue, difficulty):
     rewardperday = totalreward/totaldays
     return rewardperday/outValue*36500
 
-OutArray=[2**(x/4) for x in range(50)]
+OutArray=[2**(x/4) for x in range(45)]
 print(OutArray)
 
-def OutputWrapper():
-    RewardArray=[MintRewards(x, diff) for x in OutArray]
-    PlotArray=[OutArray,RewardArray]
-    return PlotArray
+def OutputWrapper(i):
+    print(i)
+    return [MintRewards(x, diff) for x in OutArray]
 
-fig, ax = plt.subplots()
-for w in range(100):
-    RandPlot=OutputWrapper()
-    ax.scatter(RandPlot[0],RandPlot[1])
-    print(w)
+fig, ax = plt.subplots(figsize=(12, 6))
+
+results = [OutputWrapper(x) for x in range(100)]
+
+for result in results:
+    ax.scatter(OutArray, result, c="#AAB")
+
+average = [sum(l) / len(l) for l in list(zip(*results))]
+
+ax.plot(OutArray, average)
+
 ax.set_xlabel("UTXO Size")
 ax.set_ylabel("% Reward / Yr")
 plt.xscale("log")
