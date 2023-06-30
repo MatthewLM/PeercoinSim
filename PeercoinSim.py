@@ -10,7 +10,8 @@ NumSim=1000
 diff=20.43
 PercentageReward=0.03
 StaticReward=1.34
-MaxSimDays=365*4
+MaxSimDays=365*2
+calcMints=False
 geometric=True
 
 # Precomputed probability for 31-90 days to be adjusted by value/diff
@@ -42,6 +43,7 @@ def MintRewards(outValue, difficulty):
 
     totalreward = 1 if geometric else 0
     totaldays = 0
+    mints = 0
 
     for _ in range(NumSim):
 
@@ -49,6 +51,7 @@ def MintRewards(outValue, difficulty):
 
         #Coinage Limit
         if MintDays < MaxSimDays:
+            mints += 1
             reward=PercentageReward*outValue*min(365, MintDays)/dayyear + StaticReward
             if geometric:
                 totalreward *= 1+(reward/outValue)
@@ -58,6 +61,9 @@ def MintRewards(outValue, difficulty):
         # Add to total days the amount of time waited on this mint upto the
         # maximum wait time
         totaldays += min(MintDays, MaxSimDays)
+
+    if calcMints:
+        return mints/totaldays/outValue*365
 
     # Return annualised percentage
     if geometric:
@@ -84,7 +90,7 @@ average = [sum(l) / len(l) for l in list(zip(*results))]
 ax.plot(OutArray, average)
 
 ax.set_xlabel("UTXO Size")
-ax.set_ylabel("% Reward / Yr")
+ax.set_ylabel("Mints / Coin / Yr" if calcMints else "% Reward / Yr")
 plt.xscale("log")
 plt.grid(which="both")
 plt.show()
